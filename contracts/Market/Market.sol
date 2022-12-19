@@ -61,6 +61,8 @@ contract Market is ERC721, Setters {
     uint256 depositFees = (deposit * feeFraction) / 1 ether;
     require(deposit - depositFees > 0);
 
+    asset().transferFrom(msg.sender, address(this), deposit);
+
     tokenId = ++totalSupply;
     _mint(msg.sender, tokenId);
 
@@ -92,7 +94,7 @@ contract Market is ERC721, Setters {
     if (won) {
       asset().transfer(ownerOf(tokenId), option.payout);
     } else {
-      asset().transfer(address(liquidityPool), option.deposit);
+      asset().transfer(address(liquidityPool), option.payout);
     }
 
     _burn(tokenId);

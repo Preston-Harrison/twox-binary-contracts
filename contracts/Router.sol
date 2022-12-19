@@ -33,6 +33,7 @@ contract Router {
   function decodeAndOpen(bytes calldata openParams) internal returns (uint256) {
     (address priceFeed, uint40 duration, bool isCall, uint256 deposit) = abi
       .decode(openParams, (address, uint40, bool, uint256));
+    market.asset().transferFrom(msg.sender, address(this), deposit);
     return market.mint(priceFeed, duration, isCall, deposit);
   }
 
