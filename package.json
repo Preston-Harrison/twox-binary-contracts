@@ -4,12 +4,13 @@
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
     "size": "npx hardhat size-contracts",
-    "lint": "next lint",
-    "lint:fix": "eslint src --fix && yarn format",
-    "lint:strict": "eslint --max-warnings=0 src",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix && yarn format",
+    "lint:strict": "eslint --max-warnings=0 .",
     "format": "prettier -w .",
     "format:check": "prettier -c .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint:solidity": "solhint contracts/**/*.sol"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",

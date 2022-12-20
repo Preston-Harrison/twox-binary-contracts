@@ -1,3 +1,6 @@
 build
 node_modules
 package-log.json
+artifacts
+cache
+typechain-types
