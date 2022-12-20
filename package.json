@@ -4,7 +4,12 @@
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
     "size": "npx hardhat size-contracts",
-    "lint": "npx prettier --write \"{test,scripts}/**/*.ts\""
+    "lint": "next lint",
+    "lint:fix": "eslint src --fix && yarn format",
+    "lint:strict": "eslint --max-warnings=0 src",
+    "format": "prettier -w .",
+    "format:check": "prettier -c .",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
@@ -37,6 +42,16 @@
   },
   "dependencies": {
     "@chainlink/contracts": "^0.5.1",
-    "@openzeppelin/contracts": "^4.8.0"
+    "@openzeppelin/contracts": "^4.8.0",
+    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "husky": "^8.0.2",
+    "lint-staged": "^13.1.0"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings=0",
+      "prettier -w"
+    ]
   }
 }
