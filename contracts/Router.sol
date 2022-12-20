@@ -37,9 +37,7 @@ contract Router {
     return market.mint(priceFeed, duration, isCall, deposit);
   }
 
-  function decodeAndUpdateAggregators(
-    bytes calldata aggregatorParams
-  ) public {
+  function decodeAndUpdateAggregators(bytes calldata aggregatorParams) public {
     (
       address[] memory aggregators,
       uint256[] memory timestamps,

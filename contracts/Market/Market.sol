@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.16;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/interfaces/IERC20.sol";
-import "../LiquidityPool.sol";
-import "./Setters.sol";
+import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
+import '@openzeppelin/contracts/interfaces/IERC20.sol';
+import '../LiquidityPool.sol';
+import './Setters.sol';
 
 struct Option {
   // slot one
