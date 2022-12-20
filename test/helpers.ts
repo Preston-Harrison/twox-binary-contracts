@@ -111,9 +111,7 @@ export async function increaseTimestamp(t: number) {
   await network.provider.send("evm_increaseTime", [t]);
 }
 
-export function encodeContractOpenPosition(
-  args: [...ContractOpenPosition],
-): string {
+export function encodeContractOpenPosition(args: ContractOpenPosition): string {
   return ethers.utils.defaultAbiCoder.encode(
     ["address", "uint40", "bool", "uint256"],
     args,
