@@ -16,25 +16,26 @@ contract Router {
   function updateAggregatorsAndOpen(
     bytes calldata aggregatorParams,
     bytes calldata openParams
-  ) external returns (uint256 id) {
+  ) external {
     decodeAndUpdateAggregators(aggregatorParams);
-    id = decodeAndOpen(openParams);
-    market.transferFrom(address(this), msg.sender, id);
+    decodeAndOpen(openParams);
   }
 
   function updateAggregatorsAndClose(
     bytes calldata aggregatorParams,
-    uint256 id
-  ) external returns (bool) {
+    uint256[] calldata ids
+  ) external {
     decodeAndUpdateAggregators(aggregatorParams);
-    return market.burn(id);
+    for (uint256 i = 0; i < ids.length; i++) {
+      market.burn(ids[i]);
+    }
   }
 
-  function decodeAndOpen(bytes calldata openParams) internal returns (uint256) {
+  function decodeAndOpen(bytes calldata openParams) internal {
     (address priceFeed, uint40 duration, bool isCall, uint256 deposit) = abi
       .decode(openParams, (address, uint40, bool, uint256));
     market.asset().transferFrom(msg.sender, address(this), deposit);
-    return market.mint(priceFeed, duration, isCall, deposit);
+    market.mint(priceFeed, duration, isCall, deposit, msg.sender);
   }
 
   function decodeAndUpdateAggregators(bytes calldata aggregatorParams) public {

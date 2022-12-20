@@ -54,7 +54,7 @@
     "@openzeppelin/contracts": "^4.8.0"
   },
   "lint-staged": {
-    "**/*.{js,ts,sol}": [
+    "**/*.{js,ts}": [
       "eslint --max-warnings=0",
       "prettier --write"
     ]

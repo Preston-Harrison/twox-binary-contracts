@@ -3,16 +3,14 @@ pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./Market/Market.sol";
 
 contract LiquidityPool is ERC4626 {
-  using SafeERC20 for IERC20;
-
   Market public immutable market;
 
-  constructor(IERC20 asset) ERC4626(asset) ERC20("Coral LP Token", "CLP") {
-    market = new Market(address(this), msg.sender);
+  constructor(IERC20 asset) ERC4626(asset) ERC20("Coral LP Token", "C-LP") {
+    market = new Market(address(this));
+    market.transferAdmin(msg.sender);
   }
 
   modifier onlyMarket() {
@@ -20,7 +18,8 @@ contract LiquidityPool is ERC4626 {
     _;
   }
 
+  /// Reserves an amount by transferring it to the market
   function reserveAmount(uint256 amount) external onlyMarket {
-    IERC20(asset()).safeTransfer(address(market), amount);
+    IERC20(asset()).transfer(address(market), amount);
   }
 }

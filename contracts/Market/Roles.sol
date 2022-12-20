@@ -8,8 +8,8 @@ abstract contract Roles {
   event SetAdmin(address admin);
   event SetSigner(address signer);
 
-  constructor(address initialAdmin) {
-    admin = initialAdmin;
+  constructor() {
+    admin = msg.sender;
   }
 
   modifier onlyAdmin() {

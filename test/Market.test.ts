@@ -67,7 +67,7 @@ describe("Market.sol", () => {
       isCall: true,
     });
 
-    await contracts.Router.updateAggregatorsAndClose(encodedAggregator2, 1);
+    await contracts.Router.updateAggregatorsAndClose(encodedAggregator2, [1]);
     expect(await contracts.Token.balanceOf(user.address)).eq(bn(19, 18));
   });
 
@@ -118,7 +118,7 @@ describe("Market.sol", () => {
       isCall: true,
     });
 
-    await contracts.Router.updateAggregatorsAndClose(encodedAggregator2, 1);
+    await contracts.Router.updateAggregatorsAndClose(encodedAggregator2, [1]);
     expect(await contracts.Token.balanceOf(user.address)).eq(0);
   });
 });

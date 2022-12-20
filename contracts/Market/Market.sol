@@ -7,16 +7,19 @@ import "../LiquidityPool.sol";
 import "./Setters.sol";
 
 struct Option {
-  // slot one
-  address priceFeed; // 160 bits
-  uint40 expiry; // 40 bits
-  bool isCall; // 8 bits
-  // slot two
+  /// the address of the pricefeed for this option
+  address priceFeed;
+  /// the unix timestamp (in seconds) of expiry
+  uint40 expiry;
+  /// true if the option is a call, false if it is a put
+  bool isCall;
+  /// the price the option is opened at
   int128 openPrice;
-  int128 closePrice;
-  // slot three
-  uint256 deposit;
-  // slot four
+  /// the price the option is closed at. Zeroed out while position is active
+  int128 closePrice; //! Unused, only for frontend
+  /// the deposited amount for the option
+  uint256 deposit; //! Unused, only for frontend
+  /// the total payout that the option will payout if it wins
   uint256 payout;
 }
 
@@ -24,80 +27,105 @@ contract Market is ERC721, Setters {
   /// The liquidity pool associated with this market
   LiquidityPool public immutable liquidityPool;
 
+  /// The total amount of positions
   uint256 public totalSupply;
+  /// Mapping of token id to option struct
   mapping(uint256 => Option) public options;
 
-  constructor(
-    address liquidityPool_,
-    address initialAdmin
-  ) ERC721("Coral Binary Options", "CBO") Roles(initialAdmin) {
+  constructor(address liquidityPool_) ERC721("Coral Binary Options", "C-BO") {
     liquidityPool = LiquidityPool(liquidityPool_);
   }
 
+  /// @return asset the asset of the liquidity pool
   function asset() public view returns (IERC20) {
     return IERC20(liquidityPool.asset());
   }
 
+  /// Gets the most recent price from an aggregator, and validates that it is recent
   function getPrice(address priceFeed) internal view returns (int128) {
     AggregatorV3Interface aggregator = AggregatorV3Interface(priceFeed);
     (, int256 answer, , uint256 updatedAt, ) = aggregator.latestRoundData();
     require(
-      block.timestamp < updatedAt + priceExpiryThreshold,
+      block.timestamp <= updatedAt + priceExpiryThreshold,
       "Price too old"
     );
     return int128(answer);
   }
 
+  /// Mints a new position
+  /// @param priceFeed the pricefeed option
+  /// @param duration the duration of the option
+  /// @param isCall whether or not the option is a call option
+  /// @param deposit the total deposit for the option
+  /// @param receiver the owner of the newly minted position
   function mint(
     address priceFeed,
     uint40 duration,
     bool isCall,
-    uint256 deposit
-  ) external returns (uint256 tokenId) {
-    uint256 multiplier = durationPayoutMultipliers[duration];
+    uint256 deposit,
+    address receiver
+  ) external {
+    require(isAggregatorEnabled[priceFeed], "Aggregator not enabled");
 
-    require(multiplier != 0);
-    require(isAggregatorEnabled[priceFeed]);
+    uint256 multiplier = durationMultiplier[duration];
+    require(multiplier != 0, "Duration not enabled");
+
     uint256 depositFees = (deposit * feeFraction) / 1 ether;
-    require(deposit - depositFees > 0);
+    uint256 depositAfterFee = deposit - depositFees;
+    require(depositAfterFee > 0, "Deposit after fees cannot be zero");
 
-    asset().transferFrom(msg.sender, address(this), deposit);
+    uint256 payout = (depositAfterFee * multiplier) / 1 ether;
 
-    tokenId = ++totalSupply;
-    _mint(msg.sender, tokenId);
+    // increase the total supply and set the new token id to the new supply
+    uint256 tokenId = ++totalSupply;
+    // mint the new option to the receiver
+    _mint(receiver, tokenId);
 
-    // reserve deposit and collect fees
-    uint256 payout = ((deposit - depositFees) * multiplier) / 1 ether;
-    liquidityPool.reserveAmount(payout);
-    asset().transfer(feeReceiver, depositFees);
-
+    // create the option
     options[tokenId] = Option(
       priceFeed,
+      // expiry is the block timestamp + duration
       uint40(block.timestamp + duration),
       isCall,
       getPrice(priceFeed),
       0, // not known until close
-      deposit - depositFees,
+      depositAfterFee,
       payout
     );
+
+    // transfer the deposit (after fees) to the pool
+    asset().transferFrom(msg.sender, address(liquidityPool), depositAfterFee);
+    // reserve the payout by transferring the payout amount to the pool
+    liquidityPool.reserveAmount(payout);
+    // transfer the depositFees to the fee receiver
+    asset().transfer(feeReceiver, depositFees);
   }
 
-  function burn(uint256 tokenId) external returns (bool) {
+  /// @param tokenId the id of the option to close
+  function burn(uint256 tokenId) external {
     Option storage option = options[tokenId];
-    require(option.expiry >= block.timestamp);
-    require(_exists(tokenId));
+    require(option.expiry <= block.timestamp, "Option has not expired");
+    require(_exists(tokenId), "Option burnt/does not exist");
+
+    // get owner, then burn token. Burning the token will
+    // set the owner to address(0), so it must be stored
+    address owner = ownerOf(tokenId);
+    _burn(tokenId);
+
+    /// store the close price, and check if the option wins
     option.closePrice = getPrice(option.priceFeed);
     bool won = option.isCall
+      // if call, they win if it closes above the open
       ? option.closePrice > option.openPrice
+      // if put, they win if it closes below the open
       : option.closePrice < option.openPrice;
 
     if (won) {
-      asset().transfer(ownerOf(tokenId), option.payout);
+      // transfer payout to owner
+      asset().transfer(owner, option.payout);
     } else {
+      // transfer payout back to liquidity pool
       asset().transfer(address(liquidityPool), option.payout);
     }
-
-    _burn(tokenId);
-    return won;
   }
 }

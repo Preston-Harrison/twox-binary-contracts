@@ -6,7 +6,7 @@ import "./Roles.sol";
 
 abstract contract Setters is Roles {
   mapping(address => bool) public isAggregatorEnabled;
-  mapping(uint40 => uint256) public durationPayoutMultipliers;
+  mapping(uint40 => uint256) public durationMultiplier; // 1 ether = 1x
   uint256 public priceExpiryThreshold;
   uint256 public feeFraction; // as fraction of 1 ether
   address public feeReceiver;
@@ -44,12 +44,12 @@ abstract contract Setters is Roles {
     emit SetFeeFraction(feeFraction_);
   }
 
-  function setPayoutMultiplier(
+  function setDurationMultiplier(
     uint40 duration,
     uint256 payoutMultiplier
   ) external onlyAdmin {
     require(payoutMultiplier < 2 ether && payoutMultiplier > 1 ether);
-    durationPayoutMultipliers[duration] = payoutMultiplier;
+    durationMultiplier[duration] = payoutMultiplier;
     emit SetPayoutMultiplier(duration, payoutMultiplier);
   }
 }

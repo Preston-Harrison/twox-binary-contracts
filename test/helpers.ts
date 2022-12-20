@@ -77,7 +77,7 @@ export async function deployAll() {
   await Market.setFeeReceiver(deployer.address);
   await Market.setSigner(deployer.address);
   await Market.setPriceExpiryThreshold(60);
-  await Market.setPayoutMultiplier(5 * 60, utils.parseEther("1.9"));
+  await Market.setDurationMultiplier(5 * 60, utils.parseEther("1.9"));
 
   const aggregator = await new InstantAggregator__factory(deployer).deploy(
     8,
