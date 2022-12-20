@@ -1,13 +1,6 @@
-# Sample Hardhat Project
-
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+# Goerli Addresses
+Token: 0x3e070fC39A1F2661F6DfD53EAB4EB6b9F19e57c7
+Market: 0xAF45ca951Afd9398967A9B86FC6309FEada5CB45
+Liquidity Pool: 0x8E666EC94cd2DBB618E04628CD495542AF5146CA
+ETH/USD Aggregator: 0xe534A4D49F24579419352522F3D28167A19cFc65
+BTC/USD Aggregator: 0x982801538682E0Cb14816E3DA5A0EEC1CEcD1590

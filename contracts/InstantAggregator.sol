@@ -6,11 +6,8 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 struct Round {
-  uint80 roundId;
   int256 answer;
-  uint256 startedAt;
-  uint256 updatedAt;
-  uint80 answeredInRound;
+  uint256 timestamp;
 }
 
 contract InstantAggregator is Ownable, AggregatorV3Interface {
@@ -45,8 +42,8 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     uint80 len = uint80(_rounds.length);
     if (len > 0) {
       // Don't update if new timestamp is older than latest timestamp
-      (, int256 latestAnswer, , uint256 updatedAt, ) = latestRoundData();
-      if (updatedAt > timestamp) return latestAnswer;
+      Round memory latestRound = _rounds[len - 1];
+      if (latestRound.timestamp > timestamp) return latestRound.answer;
     }
 
     // Validate signature
@@ -57,21 +54,21 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     require(ECDSA.recover(hash, signature) == owner(), "Invalid signature");
 
     // push new round
-    _rounds.push(Round(len, answer, block.timestamp, block.timestamp, len));
+    _rounds.push(Round(answer, block.timestamp));
     emit NewRound(len, answer, block.timestamp, block.timestamp, len);
     return answer;
   }
 
   function getRoundData(
     uint80 _roundId
-  ) external view returns (uint80, int256, uint256, uint256, uint80) {
+  ) public view returns (uint80, int256, uint256, uint256, uint80) {
     Round storage round = _rounds[_roundId];
     return (
-      round.roundId,
+      _roundId,
       round.answer,
-      round.startedAt,
-      round.updatedAt,
-      round.answeredInRound
+      round.timestamp,
+      round.timestamp,
+      _roundId
     );
   }
 
@@ -80,13 +77,6 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     view
     returns (uint80, int256, uint256, uint256, uint80)
   {
-    Round storage round = _rounds[_rounds.length - 1];
-    return (
-      round.roundId,
-      round.answer,
-      round.startedAt,
-      round.updatedAt,
-      round.answeredInRound
-    );
+    return getRoundData(uint80(_rounds.length - 1));
   }
 }
