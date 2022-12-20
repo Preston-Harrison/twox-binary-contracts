@@ -1,12 +1,12 @@
-import { BigNumber, Signer, BigNumberish, BytesLike } from 'ethers';
-import { ethers, network } from 'hardhat';
+import { BigNumber, Signer, BigNumberish, BytesLike } from "ethers";
+import { ethers, network } from "hardhat";
 import {
   InstantAggregator__factory,
   LiquidityPool__factory,
   Market__factory,
   MockToken__factory,
   Router__factory,
-} from '../typechain-types';
+} from "../typechain-types";
 
 const { utils, constants } = ethers;
 
@@ -46,7 +46,7 @@ export function signAggregatorUpdate(
   roundArgs: PushRound,
 ): Promise<string> {
   const bytes = utils.solidityPack(
-    ['address', 'uint256', 'int256'],
+    ["address", "uint256", "int256"],
     [roundArgs.address, roundArgs.timestamp, roundArgs.answer],
   );
   const hash = utils.keccak256(bytes);
@@ -77,11 +77,11 @@ export async function deployAll() {
   await Market.setFeeReceiver(deployer.address);
   await Market.setSigner(deployer.address);
   await Market.setPriceExpiryThreshold(60);
-  await Market.setPayoutMultiplier(5 * 60, utils.parseEther('1.9'));
+  await Market.setPayoutMultiplier(5 * 60, utils.parseEther("1.9"));
 
   const aggregator = await new InstantAggregator__factory(deployer).deploy(
     8,
-    'ETH/USD',
+    "ETH/USD",
     1,
   );
   await Market.setEnabledAggregator(aggregator.address, true);
@@ -104,18 +104,18 @@ export function stringToBytes16(s: string) {
 }
 
 export async function timestamp(): Promise<number> {
-  return (await ethers.provider.getBlock('latest')).timestamp;
+  return (await ethers.provider.getBlock("latest")).timestamp;
 }
 
 export async function increaseTimestamp(t: number) {
-  await network.provider.send('evm_increaseTime', [t]);
+  await network.provider.send("evm_increaseTime", [t]);
 }
 
 export function encodeContractOpenPosition(
   args: [...ContractOpenPosition],
 ): string {
   return ethers.utils.defaultAbiCoder.encode(
-    ['address', 'uint40', 'bool', 'uint256'],
+    ["address", "uint40", "bool", "uint256"],
     args,
   );
 }
@@ -128,7 +128,7 @@ export function encodeUpdateAggregator(
   },
 ) {
   return ethers.utils.defaultAbiCoder.encode(
-    ['address[]', 'uint256[]', 'int256[]', 'bytes[]', 'int256[]', 'bool[]'],
+    ["address[]", "uint256[]", "int256[]", "bytes[]", "int256[]", "bool[]"],
     [
       [args.address],
       [args.timestamp],

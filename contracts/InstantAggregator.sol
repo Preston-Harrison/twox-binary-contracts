@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.16;
 
-import '@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol';
-import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 struct Round {
   uint80 roundId;
@@ -40,7 +40,7 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     bytes calldata signature
   ) external returns (int256) {
     // Do not allow prices to be set in future
-    require(timestamp <= block.timestamp, 'Timestamp > block.timestamp');
+    require(timestamp <= block.timestamp, "Timestamp > block.timestamp");
 
     uint80 len = uint80(_rounds.length);
     if (len > 0) {
@@ -50,11 +50,11 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     }
 
     // Validate signature
-    require(aggregator == address(this), 'Invalid aggregator');
+    require(aggregator == address(this), "Invalid aggregator");
     bytes32 hash = ECDSA.toEthSignedMessageHash(
       keccak256(abi.encodePacked(aggregator, timestamp, answer))
     );
-    require(ECDSA.recover(hash, signature) == owner(), 'Invalid signature');
+    require(ECDSA.recover(hash, signature) == owner(), "Invalid signature");
 
     // push new round
     _rounds.push(Round(len, answer, block.timestamp, block.timestamp, len));

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.16;
 
-import './Market/Market.sol';
-import './InstantAggregator.sol';
-import '@openzeppelin/contracts/interfaces/IERC721.sol';
+import "./Market/Market.sol";
+import "./InstantAggregator.sol";
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 contract Router {
   Market public immutable market;
@@ -55,7 +55,7 @@ contract Router {
         timestamps.length == answers.length &&
         answers.length == signatures.length &&
         signatures.length == acceptableAnswers.length,
-      'Invalid aggregator array lengths'
+      "Invalid aggregator array lengths"
     );
 
     for (uint256 i = 0; i < aggregators.length; i++) {
@@ -69,7 +69,7 @@ contract Router {
       bool isValid = isCalls[i]
         ? actualAnswer <= acceptableAnswers[i]
         : actualAnswer >= acceptableAnswers[i];
-      require(isValid, 'Actual answer not acceptable');
+      require(isValid, "Actual answer not acceptable");
     }
   }
 }

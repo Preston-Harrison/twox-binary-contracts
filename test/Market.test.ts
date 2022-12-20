@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect } from "chai";
 import {
   OpenPosition,
   PushRound,
@@ -11,16 +11,16 @@ import {
   openPositionToArray,
   signAggregatorUpdate,
   timestamp,
-} from './helpers';
+} from "./helpers";
 
-describe('Market.sol', () => {
+describe("Market.sol", () => {
   let contracts: TemplateContracts;
 
   beforeEach(async () => {
     contracts = await deployAll();
   });
 
-  it('open & close a position, and win', async () => {
+  it("open & close a position, and win", async () => {
     const user = contracts.signers[1];
     await contracts.Token.mint(contracts.LiquidityPool.address, bn(1000, 18));
     await contracts.Token.mint(user.address, bn(10, 18));
@@ -71,7 +71,7 @@ describe('Market.sol', () => {
     expect(await contracts.Token.balanceOf(user.address)).eq(bn(19, 18));
   });
 
-  it('open & close a position, and close', async () => {
+  it("open & close a position, and close", async () => {
     const user = contracts.signers[1];
     await contracts.Token.mint(contracts.LiquidityPool.address, bn(1000, 18));
     await contracts.Token.mint(user.address, bn(10, 18));

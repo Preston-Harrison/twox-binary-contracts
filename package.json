@@ -7,7 +7,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix && yarn format",
     "lint:strict": "eslint --max-warnings=0 .",
-    "format": "prettier --write .",
+    "format": "prettier --write \"./**/*.{js,ts,sol}\"",
     "format:check": "prettier --check .",
     "prepare": "husky install",
     "lint:solidity": "solhint contracts/**/*.sol"
@@ -48,6 +48,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "husky": "^8.0.2",
     "lint-staged": "^13.1.0",
+    "prettier": "^2.8.1",
     "prettier-plugin-solidity": "^1.1.0",
     "solhint": "^3.3.7",
     "solhint-plugin-prettier": "^0.0.5"

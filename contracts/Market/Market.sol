@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.16;
 
-import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
-import '@openzeppelin/contracts/interfaces/IERC20.sol';
-import '../LiquidityPool.sol';
-import './Setters.sol';
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "../LiquidityPool.sol";
+import "./Setters.sol";
 
 struct Option {
   // slot one
@@ -30,7 +30,7 @@ contract Market is ERC721, Setters {
   constructor(
     address liquidityPool_,
     address initialAdmin
-  ) ERC721('Coral Binary Options', 'CBO') Roles(initialAdmin) {
+  ) ERC721("Coral Binary Options", "CBO") Roles(initialAdmin) {
     liquidityPool = LiquidityPool(liquidityPool_);
   }
 
@@ -43,7 +43,7 @@ contract Market is ERC721, Setters {
     (, int256 answer, , uint256 updatedAt, ) = aggregator.latestRoundData();
     require(
       block.timestamp < updatedAt + priceExpiryThreshold,
-      'Price too old'
+      "Price too old"
     );
     return int128(answer);
   }
