@@ -72,7 +72,7 @@ contract Market is ERC721, Setters {
 
     uint256 depositFees = (deposit * feeFraction) / 1 ether;
     uint256 depositAfterFee = deposit - depositFees;
-    require(depositAfterFee > 0, "Deposit after fees cannot be zero");
+    require(depositAfterFee > 0, "Deposit after fees is zero");
 
     uint256 payout = (depositAfterFee * multiplier) / 1 ether;
 
@@ -115,10 +115,10 @@ contract Market is ERC721, Setters {
     /// store the close price, and check if the option wins
     option.closePrice = getPrice(option.priceFeed);
     bool won = option.isCall
-      // if call, they win if it closes above the open
-      ? option.closePrice > option.openPrice
-      // if put, they win if it closes below the open
-      : option.closePrice < option.openPrice;
+      ? // if call, they win if it closes above the open
+      option.closePrice > option.openPrice
+      : // if put, they win if it closes below the open
+      option.closePrice < option.openPrice;
 
     if (won) {
       // transfer payout to owner

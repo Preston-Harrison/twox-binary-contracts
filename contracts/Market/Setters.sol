@@ -21,7 +21,10 @@ abstract contract Setters is Roles {
     address aggregator,
     bool enabled
   ) external onlyAdmin {
-    require(AggregatorV3Interface(aggregator).decimals() == 8);
+    require(
+      AggregatorV3Interface(aggregator).decimals() == 8,
+      "Invalid decimals"
+    );
     isAggregatorEnabled[aggregator] = enabled;
     emit SetAggregator(aggregator, enabled);
   }
@@ -39,7 +42,7 @@ abstract contract Setters is Roles {
   }
 
   function setFeeFraction(uint256 feeFraction_) external onlyAdmin {
-    require(feeFraction <= 1 ether);
+    require(feeFraction <= 1 ether, "Invalid fee fraction");
     feeFraction = feeFraction_;
     emit SetFeeFraction(feeFraction_);
   }
@@ -48,7 +51,10 @@ abstract contract Setters is Roles {
     uint40 duration,
     uint256 payoutMultiplier
   ) external onlyAdmin {
-    require(payoutMultiplier < 2 ether && payoutMultiplier > 1 ether);
+    require(
+      payoutMultiplier < 2 ether && payoutMultiplier > 1 ether,
+      "Invalid payout multiplier"
+    );
     durationMultiplier[duration] = payoutMultiplier;
     emit SetPayoutMultiplier(duration, payoutMultiplier);
   }
