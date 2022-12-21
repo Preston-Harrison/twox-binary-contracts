@@ -8,7 +8,7 @@ import "./Setters.sol";
 
 struct Option {
   /// the address of the pricefeed for this option
-  address priceFeed;
+  address aggregator;
   /// the unix timestamp (in seconds) of expiry
   uint40 expiry;
   /// true if the option is a call, false if it is a put
@@ -32,6 +32,22 @@ contract Market is ERC721, Setters {
   /// Mapping of token id to option struct
   mapping(uint256 => Option) public options;
 
+  event MintOption(
+    uint256 indexed id,
+    address indexed aggregator,
+    uint40 expiry,
+    bool isCall,
+    int128 openPrice,
+    uint256 deposit,
+    uint256 payout
+  );
+
+  event BurnOption(
+    uint256 indexed id,
+    int128 closePrice,
+    address owner
+  );
+
   constructor(address liquidityPool_) ERC721("Coral Binary Options", "C-BO") {
     liquidityPool = LiquidityPool(liquidityPool_);
   }
@@ -42,8 +58,8 @@ contract Market is ERC721, Setters {
   }
 
   /// Gets the most recent price from an aggregator, and validates that it is recent
-  function getPrice(address priceFeed) internal view returns (int128) {
-    AggregatorV3Interface aggregator = AggregatorV3Interface(priceFeed);
+  function getPrice(address aggregator_) internal view returns (int128) {
+    AggregatorV3Interface aggregator = AggregatorV3Interface(aggregator_);
     (, int256 answer, , uint256 updatedAt, ) = aggregator.latestRoundData();
     require(
       block.timestamp <= updatedAt + priceExpiryThreshold,
@@ -53,19 +69,19 @@ contract Market is ERC721, Setters {
   }
 
   /// Mints a new position
-  /// @param priceFeed the pricefeed option
+  /// @param aggregator the aggregator of the option
   /// @param duration the duration of the option
   /// @param isCall whether or not the option is a call option
   /// @param deposit the total deposit for the option
   /// @param receiver the owner of the newly minted position
   function mint(
-    address priceFeed,
+    address aggregator,
     uint40 duration,
     bool isCall,
     uint256 deposit,
     address receiver
   ) external {
-    require(isAggregatorEnabled[priceFeed], "Aggregator not enabled");
+    require(isAggregatorEnabled[aggregator], "Aggregator not enabled");
 
     uint256 multiplier = durationMultiplier[duration];
     require(multiplier != 0, "Duration not enabled");
@@ -81,15 +97,28 @@ contract Market is ERC721, Setters {
     // mint the new option to the receiver
     _mint(receiver, tokenId);
 
+    // expiry is the block timestamp + duration
+    uint40 expiry = uint40(block.timestamp + duration);
+    int128 openPrice = getPrice(aggregator);
+
     // create the option
     options[tokenId] = Option(
-      priceFeed,
-      // expiry is the block timestamp + duration
-      uint40(block.timestamp + duration),
+      aggregator,
+      expiry,
       isCall,
-      getPrice(priceFeed),
+      openPrice,
       0, // not known until close
       depositAfterFee,
+      payout
+    );
+
+    emit MintOption(
+      tokenId,
+      aggregator,
+      uint40(block.timestamp + duration),
+      isCall,
+      openPrice,
+      deposit,
       payout
     );
 
@@ -113,7 +142,8 @@ contract Market is ERC721, Setters {
     _burn(tokenId);
 
     /// store the close price, and check if the option wins
-    option.closePrice = getPrice(option.priceFeed);
+    int128 closePrice = getPrice(option.aggregator);
+    option.closePrice = closePrice;
     bool won = option.isCall
       ? // if call, they win if it closes above the open
       option.closePrice > option.openPrice
@@ -127,5 +157,11 @@ contract Market is ERC721, Setters {
       // transfer payout back to liquidity pool
       asset().transfer(address(liquidityPool), option.payout);
     }
+
+    emit BurnOption(
+      tokenId,
+      closePrice,
+      owner
+    );
   }
 }
