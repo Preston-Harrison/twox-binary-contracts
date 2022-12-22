@@ -76,15 +76,21 @@ export async function deployAll() {
   );
   await Market.setFeeReceiver(deployer.address);
   await Market.setSigner(deployer.address);
-  await Market.setPriceExpiryThreshold(60);
-  await Market.setDurationMultiplier(5 * 60, utils.parseEther("1.9"));
 
   const aggregator = await new InstantAggregator__factory(deployer).deploy(
     8,
     "ETH/USD",
     1,
   );
-  await Market.setEnabledAggregator(aggregator.address, true);
+  await Market.setAggregatorConfig(
+    aggregator.address,
+    19_000,
+    5 * 60,
+    5 * 60,
+    0,
+    0,
+    true,
+  );
 
   const Router = await new Router__factory(deployer).deploy(Market.address);
 

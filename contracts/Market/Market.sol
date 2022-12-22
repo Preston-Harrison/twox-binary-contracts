@@ -62,7 +62,7 @@ contract Market is ERC721, Setters {
     AggregatorV3Interface aggregator = AggregatorV3Interface(aggregator_);
     (, int256 answer, , uint256 updatedAt, ) = aggregator.latestRoundData();
     require(
-      block.timestamp <= updatedAt + priceExpiryThreshold,
+      block.timestamp <= updatedAt + aggregatorConfig[aggregator_].priceExpiryThreshold,
       "Price too old"
     );
     return int128(answer);
@@ -81,16 +81,16 @@ contract Market is ERC721, Setters {
     uint256 deposit,
     address receiver
   ) external {
-    require(isAggregatorEnabled[aggregator], "Aggregator not enabled");
+    Config memory config = aggregatorConfig[aggregator];
+    require(config.enabled, "Aggregator not enabled");
 
-    uint256 multiplier = durationMultiplier[duration];
-    require(multiplier != 0, "Duration not enabled");
+    require(duration >= config.minimumDuration && duration <= config.maximumDuration, "Duration out of bounds");
 
-    uint256 depositFees = (deposit * feeFraction) / 1 ether;
+    uint256 depositFees = (deposit * config.feeFraction) / PRECISION;
     uint256 depositAfterFee = deposit - depositFees;
     require(depositAfterFee > 0, "Deposit after fees is zero");
 
-    uint256 payout = (depositAfterFee * multiplier) / 1 ether;
+    uint256 payout = (depositAfterFee * config.payoutMultiplier) / PRECISION;
 
     // increase the total supply and set the new token id to the new supply
     uint256 tokenId = ++totalSupply;
