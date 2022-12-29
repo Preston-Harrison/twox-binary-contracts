@@ -6,6 +6,7 @@ import {
   Router__factory,
 } from "../typechain-types";
 import verify from "./verify";
+import { utils } from "ethers";
 
 const TOKEN = "0x3e070fC39A1F2661F6DfD53EAB4EB6b9F19e57c7";
 
@@ -39,20 +40,22 @@ async function main() {
 
   await Market.setAggregatorConfig(
     ethAggregator.address,
+    utils.parseEther("1"),
     19_000,
     0,
     24 * 60 * 60,
     0,
-    0,
+    0.01 * 10_000,
     true,
   );
   await Market.setAggregatorConfig(
     btcAggregator.address,
+    utils.parseEther("1"),
     19_000,
     0,
     24 * 60 * 60,
     0,
-    0,
+    0.01 * 10_000,
     true,
   );
 
@@ -64,7 +67,7 @@ async function main() {
   await new Promise<void>((r) => setTimeout(r, 30_000));
 
   await verify(LiquidityPool.address, [TOKEN]);
-  await verify(marketAddress, [LiquidityPool.address]);
+  await verify(marketAddress, [LiquidityPool.address, TOKEN]);
   await verify(ethAggregator.address, [8, "ETH/USD", 1]);
   await verify(btcAggregator.address, [8, "BTC/USD", 1]);
   await verify(Router.address, [Market.address]);
