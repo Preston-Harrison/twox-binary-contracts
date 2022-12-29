@@ -9,7 +9,7 @@ contract LiquidityPool is ERC4626 {
   Market public immutable market;
 
   constructor(IERC20 asset) ERC4626(asset) ERC20("Coral LP Token", "C-LP") {
-    market = new Market(address(this));
+    market = new Market(LiquidityPool(address(this)), asset);
     market.transferAdmin(msg.sender);
   }
 

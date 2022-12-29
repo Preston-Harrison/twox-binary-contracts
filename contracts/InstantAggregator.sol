@@ -63,13 +63,7 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     uint80 _roundId
   ) public view returns (uint80, int256, uint256, uint256, uint80) {
     Round storage round = _rounds[_roundId];
-    return (
-      _roundId,
-      round.answer,
-      round.timestamp,
-      round.timestamp,
-      _roundId
-    );
+    return (_roundId, round.answer, round.timestamp, round.timestamp, _roundId);
   }
 
   function latestRoundData()

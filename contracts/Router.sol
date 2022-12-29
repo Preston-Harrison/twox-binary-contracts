@@ -27,7 +27,7 @@ contract Router {
   ) external {
     decodeAndUpdateAggregators(aggregatorParams);
     for (uint256 i = 0; i < ids.length; i++) {
-      market.burn(ids[i]);
+      market.close(ids[i]);
     }
   }
 
@@ -35,7 +35,7 @@ contract Router {
     (address priceFeed, uint40 duration, bool isCall, uint256 deposit) = abi
       .decode(openParams, (address, uint40, bool, uint256));
     market.asset().transferFrom(msg.sender, address(this), deposit);
-    market.mint(priceFeed, duration, isCall, deposit, msg.sender);
+    market.open(priceFeed, duration, isCall, deposit, msg.sender);
   }
 
   function decodeAndUpdateAggregators(bytes calldata aggregatorParams) public {
