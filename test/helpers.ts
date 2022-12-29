@@ -54,7 +54,8 @@ export function signAggregatorUpdate(
 }
 
 export function bn(n: BigNumberish, decimals = 0) {
-  return BigNumber.from(n).mul(BigNumber.from(10).pow(decimals));
+  if (decimals === 0) return BigNumber.from(n);
+  return ethers.utils.parseUnits(n.toString(), decimals);
 }
 
 export function bn18(n: BigNumberish) {

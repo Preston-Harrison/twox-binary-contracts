@@ -5,7 +5,7 @@
     "test": "npx hardhat test",
     "size": "npx hardhat size-contracts",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix && yarn format",
+    "lint:fix": "yarn format && eslint . --fix",
     "lint:strict": "eslint --max-warnings=0 .",
     "format": "prettier --write \"./**/*.{js,ts,sol}\"",
     "format:check": "prettier --check .",

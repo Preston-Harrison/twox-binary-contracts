@@ -35,6 +35,8 @@ contract Market is ERC721, Setters {
   /// Mapping of token id to option struct
   mapping(uint256 => Option) public options;
 
+  uint256 public reservedAmount;
+
   event OpenOption(
     uint256 indexed id,
     address indexed aggregator,
@@ -55,7 +57,6 @@ contract Market is ERC721, Setters {
   ) ERC721("Coral Binary Options", "C-BO") Roles(initialOwner) {
     liquidityPool = liquidityPool_;
     asset = asset_;
-    
   }
 
   /// Gets the most recent price from an aggregator, and validates that it is recent
@@ -70,6 +71,16 @@ contract Market is ERC721, Setters {
       "Price too old"
     );
     return int128(answer);
+  }
+
+  function reserveForOpen(uint256 payout) internal {
+    // keep a log of the payouts reserved, so that the liquidity pool knows
+    // the payout ratio. This is so that accounts can't transfer funds to this
+    // contract to alter the payout ratio (without opening a position)
+    reservedAmount += payout;
+    // reserve the payout by transferring the payout amount to the pool
+    // this is done after increasing reservedAmount as the liquidity pool reads this value
+    liquidityPool.reserveAmount(payout);
   }
 
   /// Mints a new position
@@ -135,8 +146,7 @@ contract Market is ERC721, Setters {
     asset.transferFrom(msg.sender, address(liquidityPool), depositAfterFee);
     // transfer the depositFees to the fee receiver
     asset.transferFrom(msg.sender, feeReceiver, depositFees);
-    // reserve the payout by transferring the payout amount to the pool
-    liquidityPool.reserveAmount(payout);
+    reserveForOpen(payout);
   }
 
   /// @param tokenId the id of the option to close
@@ -149,6 +159,9 @@ contract Market is ERC721, Setters {
     // set the owner to address(0), so it must be stored
     address owner = ownerOf(tokenId);
     _burn(tokenId);
+    // either the payout is returned, or payed out. Either way the amount
+    // is decreased
+    reservedAmount -= option.payout;
 
     /// store the close price, and check if the option wins
     int128 closePrice = getPrice(
