@@ -131,10 +131,10 @@ contract Market is ERC721, Setters {
 
     // transfer the deposit (after fees) to the pool
     asset.transferFrom(msg.sender, address(liquidityPool), depositAfterFee);
+    // transfer the depositFees to the fee receiver
+    asset.transferFrom(msg.sender, feeReceiver, depositFees);
     // reserve the payout by transferring the payout amount to the pool
     liquidityPool.reserveAmount(payout);
-    // transfer the depositFees to the fee receiver
-    asset.transfer(feeReceiver, depositFees);
   }
 
   /// @param tokenId the id of the option to close
