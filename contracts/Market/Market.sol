@@ -50,10 +50,12 @@ contract Market is ERC721, Setters {
 
   constructor(
     LiquidityPool liquidityPool_,
-    IERC20 asset_
-  ) ERC721("Coral Binary Options", "C-BO") {
+    IERC20 asset_,
+    address initialOwner
+  ) ERC721("Coral Binary Options", "C-BO") Roles(initialOwner) {
     liquidityPool = liquidityPool_;
     asset = asset_;
+    
   }
 
   /// Gets the most recent price from an aggregator, and validates that it is recent

@@ -7,7 +7,15 @@ import "dotenv/config";
 import "./scripts/tasks";
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.16",
+  solidity: {
+    version: "0.8.16",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   networks: {
     goerli: {
       url: process.env.GOERLI_RPC_URL!,

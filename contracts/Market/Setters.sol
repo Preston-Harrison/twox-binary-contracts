@@ -32,7 +32,7 @@ abstract contract Setters is Roles, Pausable {
     bool indexed enabled
   );
 
-  function setFeeReceiver(address feeReceiver_) external onlyAdmin {
+  function setFeeReceiver(address feeReceiver_) external onlyOwner {
     feeReceiver = feeReceiver_;
     emit SetFeeReceiver(feeReceiver_);
   }
@@ -46,12 +46,13 @@ abstract contract Setters is Roles, Pausable {
     uint40 priceExpiryThreshold,
     uint40 feeFraction,
     bool enabled
-  ) external onlyAdmin {
+  ) external onlyOwner {
     require(
       payoutMultiplier >= PRECISION && payoutMultiplier <= 2 * PRECISION,
       "Invalid payout multiplier"
     );
     require(minimumDuration <= maximumDuration, "Min duration over max");
+    require(minimumDuration >= 0, "Min duration cannot be zero");
     require(feeFraction < PRECISION, "Invalid fee fraction");
 
     aggregatorConfig[aggregator] = Config(
@@ -76,11 +77,11 @@ abstract contract Setters is Roles, Pausable {
     );
   }
 
-  function pause() external whenNotPaused onlyAdmin {
+  function pause() external whenNotPaused onlyOwner {
     _pause();
   }
 
-  function unpause() external whenPaused onlyAdmin {
+  function unpause() external whenPaused onlyOwner {
     _unpause();
   }
 }

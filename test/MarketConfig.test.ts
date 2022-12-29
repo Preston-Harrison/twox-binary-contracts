@@ -74,7 +74,7 @@ describe("MarketConfig.sol", () => {
         0,
         true,
       ),
-    ).to.be.revertedWith("Unauthorized caller");
+    ).to.be.revertedWith("Ownable: caller is not the owner");
     await expect(
       contracts.Market.connect(contracts.signers[1]).setAggregatorConfig(
         contracts.aggregator.address,
@@ -86,12 +86,12 @@ describe("MarketConfig.sol", () => {
         0,
         true,
       ),
-    ).to.be.revertedWith("Unauthorized caller");
+    ).to.be.revertedWith("Ownable: caller is not the owner");
     await expect(
       contracts.Market.connect(contracts.signers[1]).setFeeReceiver(
         contracts.signers[1].address,
       ),
-    ).to.be.revertedWith("Unauthorized caller");
+    ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
   it("should not let non admins access role methods", async () => {
@@ -99,9 +99,9 @@ describe("MarketConfig.sol", () => {
 
     await expect(
       Market.connect(signers[1]).transferAdmin(signers[1].address),
-    ).to.be.revertedWith("Unauthorized caller");
+    ).to.be.revertedWith("Ownable: caller is not the owner");
     await expect(
       Market.connect(signers[1]).setSigner(signers[1].address),
-    ).to.be.revertedWith("Unauthorized caller");
+    ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 });
