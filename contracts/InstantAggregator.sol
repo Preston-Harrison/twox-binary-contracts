@@ -12,8 +12,8 @@ struct Round {
 
 contract InstantAggregator is Ownable, AggregatorV3Interface {
   uint8 public immutable decimals;
-  string public description;
   uint256 public immutable version;
+  string public description;
   Round[] private _rounds;
 
   event NewRound(

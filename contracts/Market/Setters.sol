@@ -47,12 +47,31 @@ abstract contract Setters is Roles, Pausable {
     uint40 feeFraction,
     bool enabled
   ) external onlyOwner {
+    if (!enabled) {
+      delete aggregatorConfig[aggregator];
+      emit SetAggregatorConfig(
+        aggregator,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        false
+      );
+      return;
+    }
+
+    require(
+      AggregatorV3Interface(aggregator).decimals() == 8,
+      "Aggregator decimals must be 8"
+    );
     require(
       payoutMultiplier >= PRECISION && payoutMultiplier <= 2 * PRECISION,
       "Invalid payout multiplier"
     );
     require(minimumDuration <= maximumDuration, "Min duration over max");
-    require(minimumDuration >= 0, "Min duration cannot be zero");
+    require(!enabled || minimumDuration >= 0, "Min duration cannot be zero");
     require(feeFraction < PRECISION, "Invalid fee fraction");
 
     aggregatorConfig[aggregator] = Config(

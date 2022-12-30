@@ -98,9 +98,6 @@ describe("MarketConfig.sol", () => {
     const { Market, signers } = contracts;
 
     await expect(
-      Market.connect(signers[1]).transferAdmin(signers[1].address),
-    ).to.be.revertedWith("Ownable: caller is not the owner");
-    await expect(
       Market.connect(signers[1]).setSigner(signers[1].address),
     ).to.be.revertedWith("Ownable: caller is not the owner");
   });

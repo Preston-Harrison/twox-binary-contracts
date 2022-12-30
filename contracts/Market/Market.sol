@@ -73,6 +73,8 @@ contract Market is ERC721, Setters {
     return int128(answer);
   }
 
+  /// Moves funds from the liquidty pool to this contract so that
+  /// it can be payed out if the position wins
   function reserveForOpen(uint256 payout) internal {
     // keep a log of the payouts reserved, so that the liquidity pool knows
     // the payout ratio. This is so that accounts can't transfer funds to this
@@ -116,7 +118,7 @@ contract Market is ERC721, Setters {
     _mint(receiver, tokenId);
 
     // expiry is the block timestamp + duration
-    uint40 expiry = uint40(block.timestamp + duration);
+    uint40 expiry = uint40(block.timestamp) + duration;
     int128 openPrice = getPrice(aggregator, config.priceExpiryThreshold);
 
     // create the option
@@ -142,36 +144,33 @@ contract Market is ERC721, Setters {
       payout
     );
 
-    // transfer the deposit (after fees) to the pool
-    asset.transferFrom(msg.sender, address(liquidityPool), depositAfterFee);
     // transfer the depositFees to the fee receiver
     asset.transferFrom(msg.sender, feeReceiver, depositFees);
+    // transfer the deposit (after fees) to the pool
+    asset.transferFrom(msg.sender, address(liquidityPool), depositAfterFee);
     reserveForOpen(payout);
   }
 
   /// @param tokenId the id of the option to close
   function close(uint256 tokenId) external whenNotPaused {
-    Option storage option = options[tokenId];
-    require(option.expiry <= block.timestamp, "Option has not expired");
+    Option memory option = options[tokenId];
+    require(block.timestamp >= option.expiry, "Option has not expired");
     require(_exists(tokenId), "Option is not open");
 
     // get owner, then burn token. Burning the token will
     // set the owner to address(0), so it must be stored
     address owner = ownerOf(tokenId);
     _burn(tokenId);
-    // either the payout is returned, or payed out. Either way the amount
-    // is decreased
-    reservedAmount -= option.payout;
 
     /// store the close price, and check if the option wins
     int128 closePrice = getPrice(
       option.aggregator,
       aggregatorConfig[option.aggregator].priceExpiryThreshold
     );
-    option.closePrice = closePrice;
-    bool won = option.isCall // if call, they win if it closes above the open
-      ? option.closePrice > option.openPrice // if put, they win if it closes below the open
-      : option.closePrice < option.openPrice;
+    options[tokenId].closePrice = closePrice;
+    bool won = option.isCall
+      ? closePrice > option.openPrice // if call, they win if it closes above the open
+      : closePrice < option.openPrice; // if put, they win if it closes below the open
 
     if (won) {
       // transfer payout to owner
@@ -180,6 +179,10 @@ contract Market is ERC721, Setters {
       // transfer payout back to liquidity pool
       asset.transfer(address(liquidityPool), option.payout);
     }
+
+    // either the payout is returned, or payed out. Either way the
+    // reserved amount is decreased
+    reservedAmount -= option.payout;
 
     emit CloseOption(tokenId, closePrice, owner);
   }
