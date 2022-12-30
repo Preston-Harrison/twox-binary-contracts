@@ -67,7 +67,7 @@ async function main() {
   await new Promise<void>((r) => setTimeout(r, 30_000));
 
   await verify(LiquidityPool.address, [TOKEN]);
-  await verify(marketAddress, [LiquidityPool.address, TOKEN]);
+  await verify(marketAddress, [LiquidityPool.address, TOKEN, signer.address]);
   await verify(ethAggregator.address, [8, "ETH/USD", 1]);
   await verify(btcAggregator.address, [8, "BTC/USD", 1]);
   await verify(Router.address, [Market.address]);
