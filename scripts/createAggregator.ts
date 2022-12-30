@@ -7,7 +7,7 @@ export const getDefaultParams = (usdDecimals: number) => ({
   minimumDeposit: utils.parseUnits("1", usdDecimals),
   minimumDuration: BigNumber.from(15 * 60),
   payoutMultiplier: BigNumber.from(1.9 * 10_000),
-  priceExpiryThreshold: BigNumber.from(30),
+  priceExpiryThreshold: BigNumber.from(60),
 });
 
 export type AggregatorConfig = {
