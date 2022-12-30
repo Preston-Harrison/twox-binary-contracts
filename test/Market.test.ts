@@ -71,7 +71,7 @@ describe("Market.sol", () => {
     expect(await contracts.Token.balanceOf(user.address)).eq(bn(19, 18));
   });
 
-  it("open & close a position, and close", async () => {
+  it("open & close a position, and lose", async () => {
     const user = contracts.signers[1];
     await contracts.Token.mint(contracts.LiquidityPool.address, bn(1000, 18));
     await contracts.Token.mint(user.address, bn(10, 18));

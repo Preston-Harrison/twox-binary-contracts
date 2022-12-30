@@ -85,7 +85,7 @@ export async function deployAll() {
   );
   await Market.setAggregatorConfig(
     aggregator.address,
-    0,
+    utils.parseEther("1"),
     19_000,
     5 * 60,
     5 * 60,

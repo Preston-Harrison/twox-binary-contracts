@@ -32,7 +32,8 @@ contract LiquidityPool is ERC4626, Ownable2Step {
 
     uint256 reserved = market.reservedAmount();
     // get reserved as fraction of total assets (both reserved & free)
-    uint256 reserveFraction = (reserved * PRECISION) / (totalAssets() + reserved);
+    uint256 reserveFraction = (reserved * PRECISION) /
+      (totalAssets() + reserved);
     require(
       reserveFraction <= maximumReserveFraction,
       "Reserve fraction too great"

@@ -108,7 +108,6 @@ contract Market is ERC721, Setters {
 
     uint256 depositFees = (deposit * config.feeFraction) / PRECISION;
     uint256 depositAfterFee = deposit - depositFees;
-    require(depositAfterFee > 0, "Deposit after fees is zero");
 
     uint256 payout = (depositAfterFee * config.payoutMultiplier) / PRECISION;
 
@@ -172,6 +171,10 @@ contract Market is ERC721, Setters {
       ? closePrice > option.openPrice // if call, they win if it closes above the open
       : closePrice < option.openPrice; // if put, they win if it closes below the open
 
+    // either the payout is returned, or payed out. Either way the
+    // reserved amount is decreased
+    reservedAmount -= option.payout;
+
     if (won) {
       // transfer payout to owner
       asset.transfer(owner, option.payout);
@@ -179,10 +182,6 @@ contract Market is ERC721, Setters {
       // transfer payout back to liquidity pool
       asset.transfer(address(liquidityPool), option.payout);
     }
-
-    // either the payout is returned, or payed out. Either way the
-    // reserved amount is decreased
-    reservedAmount -= option.payout;
 
     emit CloseOption(tokenId, closePrice, owner);
   }

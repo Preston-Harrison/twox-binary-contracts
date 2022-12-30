@@ -185,4 +185,18 @@ describe("LiquidityPool.sol", () => {
       );
     }
   });
+
+  it("should not let unauthorized users access functions", async () => {
+    const { LiquidityPool } = contracts;
+    const user = contracts.signers[1];
+    await expect(
+      LiquidityPool.connect(user).reserveAmount(1),
+    ).to.be.revertedWith("Unauthorized caller");
+    await expect(
+      LiquidityPool.connect(user).setMaximumReserveFraction(1),
+    ).to.be.revertedWith("Ownable: caller is not the owner");
+    await expect(
+      LiquidityPool.setMaximumReserveFraction(utils.parseEther("1.1")),
+    ).to.be.revertedWith("Fraction cannot be > 1");
+  });
 });
