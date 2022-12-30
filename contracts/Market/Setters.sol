@@ -60,6 +60,13 @@ abstract contract Setters is Roles, Pausable {
       "Invalid payout multiplier"
     );
     require(minimumDuration <= maximumDuration, "Min duration over max");
+    // Without this someone could: 
+    // 1 - get an old price
+    // 2 - wait until the price expiry threshold, then get a new price
+    // 3 - depending on the direction of the new price, open a position at the old price
+    // 4 - close the position at the new price (which would be known before 
+    // opening, and not have expired)
+    require(minimumDuration > priceExpiryThreshold, "Min duration < price expiry threshold");
     require(feeFraction < PRECISION, "Invalid fee fraction");
 
     aggregatorConfig[aggregator] = Config(

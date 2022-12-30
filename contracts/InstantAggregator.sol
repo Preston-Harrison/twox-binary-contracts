@@ -43,7 +43,7 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     if (len > 0) {
       // Don't update if new timestamp is older than latest timestamp
       Round memory latestRound = _rounds[len - 1];
-      if (latestRound.timestamp > timestamp) return latestRound.answer;
+      if (latestRound.timestamp >= timestamp) return latestRound.answer;
     }
 
     // Validate signature
@@ -54,8 +54,8 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     require(ECDSA.recover(hash, signature) == owner(), "Invalid signature");
 
     // push new round
-    _rounds.push(Round(answer, block.timestamp));
-    emit NewRound(len, answer, block.timestamp, block.timestamp, len);
+    _rounds.push(Round(answer, timestamp));
+    emit NewRound(len, answer, timestamp, timestamp, len);
     return answer;
   }
 

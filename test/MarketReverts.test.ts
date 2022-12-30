@@ -142,7 +142,7 @@ describe("Market Reverts", () => {
 
     const round2: PushRound = {
       address: contracts.aggregator.address,
-      timestamp: await timestamp(),
+      timestamp: (await timestamp()) + 5 * 60,
       answer: bn(2100, 8),
     };
     const signature2 = await signAggregatorUpdate(contracts.deployer, round2);

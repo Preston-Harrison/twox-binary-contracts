@@ -89,7 +89,7 @@ export async function deployAll() {
     19_000,
     5 * 60,
     5 * 60,
-    0,
+    10,
     0,
     true,
   );

@@ -52,11 +52,9 @@ describe("Market.sol", () => {
       encodeContractOpenPosition(openPositionToArray(position)),
     );
 
-    await increaseTimestamp(5 * 60);
-
     const round2: PushRound = {
       address: contracts.aggregator.address,
-      timestamp: await timestamp(),
+      timestamp: (await timestamp()) + 5 * 60,
       answer: bn(2100, 8),
     };
     const signature2 = await signAggregatorUpdate(contracts.deployer, round2);
@@ -67,6 +65,7 @@ describe("Market.sol", () => {
       isCall: true,
     });
 
+    await increaseTimestamp(5 * 60);
     await contracts.Router.updateAggregatorsAndClose(encodedAggregator2, [1]);
     expect(await contracts.Token.balanceOf(user.address)).eq(bn(19, 18));
   });
@@ -103,11 +102,9 @@ describe("Market.sol", () => {
       encodeContractOpenPosition(openPositionToArray(position)),
     );
 
-    await increaseTimestamp(5 * 60);
-
     const round2: PushRound = {
       address: contracts.aggregator.address,
-      timestamp: await timestamp(),
+      timestamp: (await timestamp()) + 5 * 60,
       answer: bn(1900, 8),
     };
     const signature2 = await signAggregatorUpdate(contracts.deployer, round2);
@@ -118,6 +115,7 @@ describe("Market.sol", () => {
       isCall: true,
     });
 
+    await increaseTimestamp(5 * 60);
     await contracts.Router.updateAggregatorsAndClose(encodedAggregator2, [1]);
     expect(await contracts.Token.balanceOf(user.address)).eq(0);
   });

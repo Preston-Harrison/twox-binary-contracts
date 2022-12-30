@@ -1,12 +1,13 @@
 import hre from "hardhat";
 import {
-  InstantAggregator__factory,
+  ERC20__factory,
   LiquidityPool__factory,
   Market__factory,
   Router__factory,
 } from "../typechain-types";
 import verify from "./verify";
-import { utils } from "ethers";
+import { BigNumber, utils } from "ethers";
+import { createAggregator } from "./createAggregator";
 
 const TOKEN = "0x3e070fC39A1F2661F6DfD53EAB4EB6b9F19e57c7";
 
@@ -14,6 +15,7 @@ const { log } = console;
 
 async function main() {
   const [signer] = await hre.ethers.getSigners();
+  const token = ERC20__factory.connect(TOKEN, signer);
   log("Deploying liquidity pool & market");
   const LiquidityPool = await new LiquidityPool__factory(signer).deploy(TOKEN);
   await LiquidityPool.deployed();
@@ -23,41 +25,24 @@ async function main() {
   await Market.setFeeReceiver(signer.getAddress());
 
   log("Deploying ETH/USD aggregator");
-  const ethAggregator = await new InstantAggregator__factory(signer).deploy(
-    8,
-    "ETH/USD",
-    1,
-  );
-  await ethAggregator.deployed();
+  const ethAggregator = await createAggregator(signer, "ETH/USD", Market, {
+    feeFraction: BigNumber.from(0.01 * 10_000),
+    maximumDuration: BigNumber.from(24 * 60 * 60),
+    minimumDeposit: utils.parseUnits("1", await token.decimals()),
+    minimumDuration: BigNumber.from(15 * 60),
+    payoutMultiplier: BigNumber.from(1.9 * 10_000),
+    priceExpiryThreshold: BigNumber.from(30),
+  });
 
   log("Deploying BTC/USD aggregator");
-  const btcAggregator = await new InstantAggregator__factory(signer).deploy(
-    8,
-    "BTC/USD",
-    1,
-  );
-  await btcAggregator.deployed();
-
-  await Market.setAggregatorConfig(
-    ethAggregator.address,
-    utils.parseEther("1"),
-    19_000,
-    0,
-    24 * 60 * 60,
-    0,
-    0.01 * 10_000,
-    true,
-  );
-  await Market.setAggregatorConfig(
-    btcAggregator.address,
-    utils.parseEther("1"),
-    19_000,
-    0,
-    24 * 60 * 60,
-    0,
-    0.01 * 10_000,
-    true,
-  );
+  const btcAggregator = await createAggregator(signer, "BTC/USD", Market, {
+    feeFraction: BigNumber.from(0.01 * 10_000),
+    maximumDuration: BigNumber.from(24 * 60 * 60),
+    minimumDeposit: utils.parseUnits("1", await token.decimals()),
+    minimumDuration: BigNumber.from(15 * 60),
+    payoutMultiplier: BigNumber.from(1.9 * 10_000),
+    priceExpiryThreshold: BigNumber.from(30),
+  });
 
   log("Deploying Router");
   const Router = await new Router__factory(signer).deploy(Market.address);
