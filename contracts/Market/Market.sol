@@ -58,7 +58,7 @@ contract Market is ERC721, Setters {
     LiquidityPool liquidityPool_,
     IERC20 asset_,
     address initialOwner
-  ) ERC721("Coral Binary Options", "C-BO") Setters(initialOwner) {
+  ) ERC721("TwoX Binary Options", "2X") Setters(initialOwner) {
     liquidityPool = liquidityPool_;
     asset = asset_;
   }

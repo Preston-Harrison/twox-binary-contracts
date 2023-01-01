@@ -17,7 +17,7 @@ contract LiquidityPool is ERC4626, Ownable2Step {
   uint256 public maximumReserveFraction = PRECISION;
   event SetMaximumReserveFraction(uint256 maximumReserveFraction);
 
-  constructor(IERC20 asset) ERC4626(asset) ERC20("Coral LP Token", "C-LP") {
+  constructor(IERC20 asset) ERC4626(asset) ERC20("TwoX Liquidiy Pool", "2XLP") {
     market = new Market(LiquidityPool(address(this)), asset, msg.sender);
   }
 
