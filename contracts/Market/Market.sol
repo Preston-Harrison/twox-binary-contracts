@@ -2,6 +2,7 @@
 pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "../LiquidityPool.sol";
 import "./Setters.sol";
@@ -10,7 +11,7 @@ struct Option {
   /// the address of the pricefeed for this option
   address aggregator;
   /// the unix timestamp (in seconds) of open time
-  uint40 openTime; //! currently unused for logic
+  uint40 openTime;
   /// the unix timestamp (in seconds) of expiry
   uint40 expiry;
   /// true if the option is a call, false if it is a put
@@ -18,14 +19,16 @@ struct Option {
   /// the price the option is opened at
   int128 openPrice;
   /// the price the option is closed at. Zeroed out while position is active
-  int128 closePrice; //! currently unused for logic
+  int128 closePrice;
   /// the deposited amount for the option
-  uint256 deposit; //! currently unused for logic
+  uint256 deposit;
   /// the total payout that the option will payout if it wins
   uint256 payout;
 }
 
 contract Market is ERC721, Setters {
+  using SafeERC20 for IERC20;
+
   /// The liquidity pool associated with this market
   LiquidityPool public immutable liquidityPool;
   IERC20 public immutable asset;
@@ -35,6 +38,7 @@ contract Market is ERC721, Setters {
   /// Mapping of token id to option struct
   mapping(uint256 => Option) public options;
 
+  // the current amount reserved for potential payouts
   uint256 public reservedAmount;
 
   event OpenOption(
@@ -48,13 +52,13 @@ contract Market is ERC721, Setters {
     uint256 payout
   );
 
-  event CloseOption(uint256 indexed id, int128 closePrice, address owner);
+  event CloseOption(uint256 indexed id, int128 closePrice);
 
   constructor(
     LiquidityPool liquidityPool_,
     IERC20 asset_,
     address initialOwner
-  ) ERC721("Coral Binary Options", "C-BO") Roles(initialOwner) {
+  ) ERC721("Coral Binary Options", "C-BO") Setters(initialOwner) {
     liquidityPool = liquidityPool_;
     asset = asset_;
   }
@@ -79,6 +83,8 @@ contract Market is ERC721, Setters {
     // keep a log of the payouts reserved, so that the liquidity pool knows
     // the payout ratio. This is so that accounts can't transfer funds to this
     // contract to alter the payout ratio (without opening a position)
+    // it is important this is done before reserving the amount so the liquidity pool
+    // can perform the correct reserve ratio checks
     reservedAmount += payout;
     // reserve the payout by transferring the payout amount to the pool
     // this is done after increasing reservedAmount as the liquidity pool reads this value
@@ -108,7 +114,6 @@ contract Market is ERC721, Setters {
 
     uint256 depositFees = (deposit * config.feeFraction) / PRECISION;
     uint256 depositAfterFee = deposit - depositFees;
-
     uint256 payout = (depositAfterFee * config.payoutMultiplier) / PRECISION;
 
     // increase the total supply and set the new token id to the new supply
@@ -144,9 +149,9 @@ contract Market is ERC721, Setters {
     );
 
     // transfer the depositFees to the fee receiver
-    asset.transferFrom(msg.sender, feeReceiver, depositFees);
+    asset.safeTransferFrom(msg.sender, feeReceiver, depositFees);
     // transfer the deposit (after fees) to the pool
-    asset.transferFrom(msg.sender, address(liquidityPool), depositAfterFee);
+    asset.safeTransferFrom(msg.sender, address(liquidityPool), depositAfterFee);
     reserveForOpen(payout);
   }
 
@@ -175,14 +180,14 @@ contract Market is ERC721, Setters {
     // reserved amount is decreased
     reservedAmount -= option.payout;
 
+    emit CloseOption(tokenId, closePrice);
+
     if (won) {
       // transfer payout to owner
-      asset.transfer(owner, option.payout);
+      asset.safeTransfer(owner, option.payout);
     } else {
-      // transfer payout back to liquidity pool
-      asset.transfer(address(liquidityPool), option.payout);
+      // safeTransfer payout back to liquidity pool
+      asset.safeTransfer(address(liquidityPool), option.payout);
     }
-
-    emit CloseOption(tokenId, closePrice, owner);
   }
 }

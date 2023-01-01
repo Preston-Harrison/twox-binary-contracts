@@ -11,7 +11,10 @@
     "format:check": "prettier --check .",
     "prepare": "husky install",
     "lint:solidity": "solhint contracts/**/*.sol",
-    "coverage": "npx hardhat coverage"
+    "coverage": "npx hardhat coverage",
+    "slither:Market": "slither ./contracts/Market/Market.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin @chainlink=node_modules/@chainlink' --filter-paths 'openzeppelin|chainlink'",
+    "slither:InstantAggregator": "slither ./contracts/InstantAggregator.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin @chainlink=node_modules/@chainlink' --filter-paths 'openzeppelin|chainlink'",
+    "slither:Router": "slither ./contracts/Router.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin @chainlink=node_modules/@chainlink' --filter-paths 'openzeppelin|chainlink'"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",

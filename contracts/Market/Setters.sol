@@ -3,7 +3,7 @@ pragma solidity 0.8.16;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "./Roles.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 
 struct Config {
   uint256 minimumDeposit;
@@ -15,12 +15,12 @@ struct Config {
   bool enabled;
 }
 
-abstract contract Setters is Roles, Pausable {
+abstract contract Setters is Ownable2Step, Pausable {
   uint256 public constant PRECISION = 10_000;
   mapping(address => Config) public aggregatorConfig;
   address public feeReceiver;
 
-  event SetFeeReceiver(address feeReceiver);
+  event SetFeeReceiver(address indexed feeReceiver);
   event SetAggregatorConfig(
     address indexed aggregator,
     uint256 minimumDeposit,
@@ -32,7 +32,13 @@ abstract contract Setters is Roles, Pausable {
     bool indexed enabled
   );
 
+  constructor(address initialAdmin) {
+    _transferOwnership(initialAdmin);
+    feeReceiver = initialAdmin;
+  }
+
   function setFeeReceiver(address feeReceiver_) external onlyOwner {
+    require(feeReceiver_ != address(0), "Fee receiver cannot be address(0)");
     feeReceiver = feeReceiver_;
     emit SetFeeReceiver(feeReceiver_);
   }

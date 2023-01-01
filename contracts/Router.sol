@@ -4,8 +4,11 @@ pragma solidity 0.8.16;
 import "./Market/Market.sol";
 import "./InstantAggregator.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Router {
+  using SafeERC20 for IERC20;
+  
   Market public immutable market;
 
   constructor(address market_) {
@@ -34,7 +37,7 @@ contract Router {
   function decodeAndOpen(bytes calldata openParams) internal {
     (address priceFeed, uint40 duration, bool isCall, uint256 deposit) = abi
       .decode(openParams, (address, uint40, bool, uint256));
-    market.asset().transferFrom(msg.sender, address(this), deposit);
+    market.asset().safeTransferFrom(msg.sender, address(this), deposit);
     market.open(priceFeed, duration, isCall, deposit, msg.sender);
   }
 

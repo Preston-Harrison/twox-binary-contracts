@@ -95,14 +95,6 @@ describe("Market Config", () => {
     ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
-  it("should not let non admins access role methods", async () => {
-    const { Market, signers } = contracts;
-
-    await expect(
-      Market.connect(signers[1]).setSigner(signers[1].address),
-    ).to.be.revertedWith("Ownable: caller is not the owner");
-  });
-
   it("should only allow aggregators with 8 decimals to be enabled", async () => {
     const { deployer, Market } = contracts;
     const agg = await new MockAggregatorV3__factory(deployer).deploy(9);

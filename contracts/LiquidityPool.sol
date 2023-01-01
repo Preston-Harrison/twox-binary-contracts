@@ -2,11 +2,14 @@
 pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "./Market/Market.sol";
 
 contract LiquidityPool is ERC4626, Ownable2Step {
+  using SafeERC20 for IERC20;
+
   uint256 public constant PRECISION = 1 ether;
   Market public immutable market;
 
@@ -26,18 +29,16 @@ contract LiquidityPool is ERC4626, Ownable2Step {
   /// Reserves an amount by transferring it to the market
   /// Must be called after market reserved amount has been increased
   function reserveAmount(uint256 amount) external onlyMarket {
-    // market has just increased internal reservedAmount counter
-    // so transfer immediately before performing checks
-    IERC20(asset()).transfer(address(market), amount);
-
     uint256 reserved = market.reservedAmount();
     // get reserved as fraction of total assets (both reserved & free)
     uint256 reserveFraction = (reserved * PRECISION) /
-      (totalAssets() + reserved);
+      (totalAssets() + reserved - amount);
     require(
       reserveFraction <= maximumReserveFraction,
       "Reserve fraction too great"
     );
+
+    IERC20(asset()).safeTransfer(address(market), amount);
   }
 
   function setMaximumReserveFraction(

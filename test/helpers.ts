@@ -76,7 +76,6 @@ export async function deployAll() {
     deployer,
   );
   await Market.setFeeReceiver(deployer.address);
-  await Market.setSigner(deployer.address);
 
   const aggregator = await new InstantAggregator__factory(deployer).deploy(
     8,
