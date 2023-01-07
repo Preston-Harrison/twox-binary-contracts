@@ -26,13 +26,11 @@ contract LiquidityPool is ERC4626, Ownable2Step {
     _;
   }
 
-  /// Reserves an amount by transferring it to the market
-  /// Must be called after market reserved amount has been increased
   function reserveAmount(uint256 amount) external onlyMarket {
     uint256 reserved = market.reservedAmount();
     // get reserved as fraction of total assets (both reserved & free)
-    uint256 reserveFraction = (reserved * PRECISION) /
-      (totalAssets() + reserved - amount);
+    uint256 reserveFraction = ((reserved + amount) * PRECISION) /
+      (totalAssets() + reserved);
     require(
       reserveFraction <= maximumReserveFraction,
       "Reserve fraction too great"

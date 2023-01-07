@@ -80,15 +80,8 @@ contract Market is ERC721, Setters {
   /// Moves funds from the liquidty pool to this contract so that
   /// it can be payed out if the position wins
   function reserveForOpen(uint256 payout) internal {
-    // keep a log of the payouts reserved, so that the liquidity pool knows
-    // the payout ratio. This is so that accounts can't transfer funds to this
-    // contract to alter the payout ratio (without opening a position)
-    // it is important this is done before reserving the amount so the liquidity pool
-    // can perform the correct reserve ratio checks
-    reservedAmount += payout;
-    // reserve the payout by transferring the payout amount to the pool
-    // this is done after increasing reservedAmount as the liquidity pool reads this value
     liquidityPool.reserveAmount(payout);
+    reservedAmount += payout;
   }
 
   /// Mints a new position
