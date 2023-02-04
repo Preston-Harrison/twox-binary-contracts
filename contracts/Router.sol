@@ -66,6 +66,7 @@ contract Router {
     for (uint256 i = 0; i < aggregators.length; i++) {
       InstantAggregator aggregator = InstantAggregator(aggregators[i]);
       int256 actualAnswer = aggregator.pushRound(
+        aggregators[i],
         timestamps[i],
         answers[i],
         signatures[i]
