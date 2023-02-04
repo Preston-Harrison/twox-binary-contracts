@@ -31,6 +31,7 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
   }
 
   function pushRound(
+    address aggregator,
     uint256 timestamp,
     int256 answer,
     bytes calldata signature
@@ -46,8 +47,9 @@ contract InstantAggregator is Ownable, AggregatorV3Interface {
     }
 
     // Validate signature
+    require(aggregator == address(this), "Invalid aggregator");
     bytes32 hash = ECDSA.toEthSignedMessageHash(
-      keccak256(abi.encodePacked(address(this), timestamp, answer))
+      keccak256(abi.encodePacked(aggregator, timestamp, answer))
     );
     require(ECDSA.recover(hash, signature) == owner(), "Invalid signature");
 
