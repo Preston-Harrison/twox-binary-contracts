@@ -34,7 +34,7 @@ contract Market is ERC721, Setters {
   IERC20 public immutable asset;
 
   /// The total amount of positions
-  uint256 public totalSupply;
+  uint256 public totalOptionsMinted;
   /// Mapping of token id to option struct
   mapping(uint256 => Option) public options;
 
@@ -110,7 +110,7 @@ contract Market is ERC721, Setters {
     uint256 payout = (depositAfterFee * config.payoutMultiplier) / PRECISION;
 
     // increase the total supply and set the new token id to the new supply
-    uint256 tokenId = ++totalSupply;
+    uint256 tokenId = ++totalOptionsMinted;
     // mint the new option to the receiver
     _mint(receiver, tokenId);
 
